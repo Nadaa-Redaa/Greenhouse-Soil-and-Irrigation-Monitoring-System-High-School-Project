@@ -1,0 +1,93 @@
+#include <DHT.h>
+
+// Pin definitions
+const int moistureSensorPin = A1;  // Soil moisture sensor connected to A1
+const int pumpInput1 = 7;          // H-bridge input pin 1 connected to pin 7
+const int pumpInput2 = 8;          // H-bridge input pin 2 connected to pin 8
+const int lightSensorPin = A0;     // Light intensity sensor connected to A0
+const int buzzerPin = 4;           // Buzzer connected to pin 4
+const int mq135Pin = A2;           // MQ-135 sensor connected to A2
+const int dhtPin = 9;              // DHT22 sensor connected to pin 9
+
+const int moistureThreshold = 200;  // Soil moisture threshold
+const int lightThreshold = 100;     // Light intensity threshold
+
+// DHT22 setup
+DHT dht(dhtPin, DHT22);
+
+void setup() {
+  // Initialize serial communication for debugging
+  Serial.begin(9600);
+  
+  // Set pump control pins and buzzer pin as output
+  pinMode(pumpInput1, OUTPUT);
+  pinMode(pumpInput2, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  
+  // Start with the pump and buzzer off
+  digitalWrite(pumpInput1, LOW);
+  digitalWrite(pumpInput2, LOW);
+  digitalWrite(buzzerPin, LOW);
+  
+  // Initialize DHT sensor
+  dht.begin();
+}
+
+void loop() {
+  // Read soil moisture level
+  int moistureLevel = analogRead(moistureSensorPin);
+  
+  // Read light intensity level
+  int lightLevel = analogRead(lightSensorPin);
+  
+  // Read MQ-135 sensor level
+  int mq135Level = analogRead(mq135Pin);
+  
+  // Read temperature and humidity
+  float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+
+  // Print structured sensor readings for debugging
+  Serial.print("Moisture Level: ");
+  Serial.print(moistureLevel);
+  Serial.print(", Light Level: ");
+  Serial.print(lightLevel);
+  Serial.print(", MQ-135 Level: ");
+  Serial.print(mq135Level);
+  Serial.print(", Humidity: ");
+  Serial.print(humidity);
+  Serial.print(", Temperature: ");
+  Serial.println(temperature);
+  
+  // Check if the moisture level is below the threshold and activate/deactivate the water pump
+  if (moistureLevel > moistureThreshold) {
+    Serial.println("Pump ON (Low Moisture)");
+    digitalWrite(pumpInput1, HIGH);
+    digitalWrite(pumpInput2, LOW);
+    sendBluetoothMessage("Pump is ON due to low moisture.");
+  } else {
+    Serial.println("Pump OFF (Sufficient Moisture)");
+    digitalWrite(pumpInput1, LOW);
+    digitalWrite(pumpInput2, LOW);
+    sendBluetoothMessage("Pump is OFF. Moisture level sufficient.");
+  }
+
+  // Check if light level exceeds the threshold and turn on/off buzzer
+  if (lightLevel > lightThreshold) {
+    Serial.println("Buzzer ON (High Light Intensity)");
+    digitalWrite(buzzerPin, HIGH);
+    sendBluetoothMessage("Alert: High light intensity detected!");
+  } else {
+    Serial.println("Buzzer OFF");
+    digitalWrite(buzzerPin, LOW);
+  }
+
+  // Wait for 30 seconds before the next reading
+  delay(30000); // 30 seconds
+}
+
+// Function to send Bluetooth messages
+void sendBluetoothMessage(String message) {
+  // Replace with your Bluetooth module's method to send data
+  Serial.println(message);
+}
