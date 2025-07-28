@@ -1,1 +1,0 @@
-# Greenhouse-Soil-and-Irrigation-Monitoring-System-High-School-Project-
