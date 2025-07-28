@@ -48,7 +48,7 @@ void loop() {
   float temperature = dht.readTemperature();
 
   // Print structured sensor readings for debugging
-  Serial.print("Moisture Level: ");
+  Serial.print(", Moisture Level: ");
   Serial.print(moistureLevel);
   Serial.print(", Light Level: ");
   Serial.print(lightLevel);
